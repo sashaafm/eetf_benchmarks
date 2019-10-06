@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<!DOCTYPE tsung SYSTEM "/usr/local/Cellar/tsung/1.7.0/share/tsung/tsung-1.0.dtd">
+<tsung loglevel="info" version="1.0">
+
+  <clients>
+    <client host="localhost" maxusers="100" cpu="1" use_controller_vm="true"/>
+  </clients>
+
+  <!-- Server side setup -->
+  <servers>
+    <server host="192.168.1.11" port="4000" type="tcp"></server>
+  </servers>
+
+  <!-- Monitoring resource usage -->
+  <monitoring>
+    <monitor host="192.168.1.11" type="erlang"></monitor>
+  </monitoring>
+
+  <!-- Load settings -->
+  <load>
+    <arrivalphase phase="1" duration="5" unit="minute">
+      <users arrivalrate="10" unit="second" maxnumber="100"></users>
+    </arrivalphase>
+  </load>
+
+  <sessions>
+    <session name="get_person" probability="100" type="ts_http">
+      <transaction name="get_person_loop">
+        <for from="1" to="100000" incr="1" var="counter">
+          <transaction name="get_person_json">
+            <request>
+              <http url="/person" method="GET" version="1.1">
+                <http_header name="Accept" value="application/json"/>
+              </http>
+            </request>
+          </transaction>
+        </for>
+      </transaction>
+    </session>
+  </sessions>
+</tsung>

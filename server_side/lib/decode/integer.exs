@@ -1,25 +1,26 @@
-random_str = fn -> Randomizer.string(Enum.random(0..255), :all) end
-list = Randomizer.list(100_000, random_str)
+random_int = fn -> Randomizer.int() end
+list = Randomizer.list(100_000, random_int)
+payloads = Encoder.encode(list)
 
 Benchee.run(
   %{
     "External Term Format (Compression 0)" => fn ->
-      :erlang.term_to_binary(list, [compressed: 0])
+      :erlang.binary_to_term(payloads.etf_0)
     end,
     "External Term Format (Compression 1)" => fn ->
-      :erlang.term_to_binary(list, [compressed: 1])
+      :erlang.binary_to_term(payloads.etf_1)
     end,
     "External Term Format (Compression 6)" => fn ->
-      :erlang.term_to_binary(list, [compressed: 6])
+      :erlang.binary_to_term(payloads.etf_6)
     end,
     "External Term Format (Compression 9)" => fn ->
-      :erlang.term_to_binary(list, [compressed: 9])
+      :erlang.binary_to_term(payloads.etf_9)
     end,
     "Jason" => fn ->
-      Jason.encode!(list)
+      Jason.decode!(payloads.json)
     end,
     "Jiffy" => fn ->
-      :jiffy.encode(list)
+      :jiffy.decode(payloads.json)
     end
   },
   warmup: 30,

@@ -1,6 +1,13 @@
-random_str = fn -> Randomizer.string(Enum.random(0..255), :all) end
-list = Randomizer.list(100_000, random_str)
-payloads = Encoder.encode(list)
+file = "#{:code.priv_dir(:server_side)}/earth_rivers.json"
+IO.puts("File size is #{File.stat!(file).size}")
+IO.puts("Going to read file...")
+t1 = DateTime.utc_now()
+json_payload = File.read!(file)
+t2 = DateTime.utc_now()
+IO.puts("Done.")
+IO.puts("Took #{DateTime.diff(t2, t1)} seconds.")
+{:ok, decoded_payload} = Jason.decode(json_payload)
+payloads = Encoder.encode(decoded_payload)
 
 Benchee.run(
   %{

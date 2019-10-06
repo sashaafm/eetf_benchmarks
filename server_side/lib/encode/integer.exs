@@ -1,25 +1,29 @@
-random_int = fn -> Randomizer.random_int() end
+random_int = fn -> Randomizer.int() end
+list = Randomizer.list(100_000, random_int)
 
 Benchee.run(
   %{
-    "External Term Format" => fn(input) ->
-      Enum.map(input, &:erlang.term_to_binary(&1))
+    "External Term Format (Compression 0)" => fn ->
+      :erlang.term_to_binary(list, [compressed: 0])
     end,
-    "Jason" => fn(input) ->
-      Enum.map(input, &Jason.encode(&1))
+    "External Term Format (Compression 1)" => fn ->
+      :erlang.term_to_binary(list, [compressed: 1])
     end,
-    "Jiffy" => fn(input) ->
-      Enum.map(input, &:jiffy.encode(&1))
+    "External Term Format (Compression 6)" => fn ->
+      :erlang.term_to_binary(list, [compressed: 6])
+    end,
+    "External Term Format (Compression 9)" => fn ->
+      :erlang.term_to_binary(list, [compressed: 9])
+    end,
+    "Jason" => fn ->
+      Jason.encode(list)
+    end,
+    "Jiffy" => fn ->
+      :jiffy.encode(list)
     end
   },
   warmup: 30,
   time: 30,
   memory_time: 10,
-  inputs: %{
-    "Small" => Randomizer.list(1_000, random_int),
-    "Medium" => Randomizer.list(10_000, random_int),
-    "Large" => Randomizer.list(50_000, random_int),
-    "Largest" => Randomizer.list(100_000, random_int),
-  },
   formatters: [{Benchee.Formatters.Console, extended_statistics: true}]
 )
